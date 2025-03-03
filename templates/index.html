@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Emotion Recognition for Kids</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #121212;
+            color: #fff;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1200px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+        }
+
+        .info-section {
+            text-align: center;
+        }
+
+        h2, h3 {
+            color: #ff9a9e;
+        }
+
+        button {
+            background: #ff9a9e;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .emoji-output {
+            font-size: 5rem;
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .loading-emojis {
+            font-size: 2rem;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .video-library {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .videos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .videos iframe {
+            border-radius: 15px;
+            width: 100%;
+            height: 200px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+                align-items: center;
+                padding: 30px;
+            }
+
+            .info-section, .video-library {
+                flex: 1;
+            }
+
+            .emoji-output {
+                font-size: 6rem;
+            }
+
+            button {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="info-section">
+            <h2>Speech Emotion Recognition</h2>
+            <p>Speech Emotion Recognition (SER) detects human emotions through voice patterns and tone.</p>
+            <button id="recordButton">🎤 Start Talking</button>
+            <div class="loading-emojis" id="loadingEmojis">😀 😢 😡 😱 😍 🤔 🥳 😭 😠 🤯</div>
+            <div class="emoji-output" id="emojiOutput"></div>
+        </div>
+        <div class="video-library">
+            <h3>Learn More About Emotions</h3>
+            <div class="videos">
+                <iframe src="https://www.youtube.com/embed/dOkyKyVFnSs?autoplay=1&mute=1" frameborder="0" allowfullscreen></iframe>
+                <iframe src="https://www.youtube.com/embed/TJeMQnaMMMA?autoplay=1&mute=1" frameborder="0" allowfullscreen></iframe>
+                <iframe src="https://www.youtube.com/embed/cKQIOVjxmfs?autoplay=1&mute=1" frameborder="0" allowfullscreen></iframe>
+                <iframe src="https://www.youtube.com/embed/Z6SGZ_UpIZM?autoplay=1&mute=1" frameborder="0" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const recordButton = document.getElementById('recordButton');
+        const emojiOutput = document.getElementById('emojiOutput');
+        const loadingEmojis = document.getElementById('loadingEmojis');
+        let recognition;
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+        }
+
+        recordButton.addEventListener('click', () => {
+            if (recognition) {
+                emojiOutput.style.opacity = '0';
+                loadingEmojis.style.opacity = '1';
+                recognition.start();
+            }
+        });
+
+        recognition.onresult = (event) => {
+            let transcript = event.results[0][0].transcript.toLowerCase();
+            const emotionToEmoji = {
+                "neutral": "😐", "happy": "😀", "sad": "😢", "angry": "😡", "surprised": "😱",
+                "love": "😍", "fearful": "😨", "excited": "🥳", "disgusted": "🤢", "confused": "😕"
+            };
+            let detectedEmotion = "😊";
+            let emotionText = "I detected a neutral emotion.";
+
+            for (let key in emotionToEmoji) {
+                if (transcript.includes(key)) {
+                    detectedEmotion = emotionToEmoji[key];
+                    emotionText = `I detected that you are feeling ${key}.`;
+                    break;
+                }
+            }
+
+            emojiOutput.style.opacity = "0";
+            setTimeout(() => {
+                emojiOutput.textContent = detectedEmotion;
+                emojiOutput.style.opacity = "1";
+                speakEmotion(emotionText);
+            }, 300);
+        };
+
+        function speakEmotion(text) {
+            let speech = new SpeechSynthesisUtterance(text);
+            speech.lang = "en-US";
+            speech.volume = 1;
+            speech.rate = 1;
+            speech.pitch = 1;
+            window.speechSynthesis.speak(speech);
+        }
+    </script>
+</body>
+</html>
